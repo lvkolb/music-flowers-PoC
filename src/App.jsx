@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AudioEngine } from './audio';
 import Plant from './Plant';
-import { Power, Volume2, Plus, Trash2 } from 'lucide-react';
+import Sequencer from './Sequencer';
+import { Power, Volume2, Plus, Trash2, LayoutGrid, Flower2 } from 'lucide-react';
 
 function App() {
   const [isOn, setIsOn] = useState(false);
+  const [viewMode, setViewMode] = useState('garden'); // 'garden' or 'sequencer'
   const [volume, setVolume] = useState(0.8);
   const [bpm, setBpm] = useState(75);
   const basketRef = useRef(null);
@@ -97,6 +99,34 @@ function App() {
           <Power size={24} />
         </button>
 
+        {/* View Mode Toggle */}
+        <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '20px', padding: '4px' }}>
+          <button
+            onClick={() => setViewMode('garden')}
+            style={{
+              background: viewMode === 'garden' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              border: 'none', color: viewMode === 'garden' ? '#fff' : 'var(--text-muted)',
+              padding: '8px 16px', borderRadius: '16px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 'bold',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Flower2 size={16} /> Garden
+          </button>
+          <button
+            onClick={() => setViewMode('sequencer')}
+            style={{
+              background: viewMode === 'sequencer' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              border: 'none', color: viewMode === 'sequencer' ? '#fff' : 'var(--text-muted)',
+              padding: '8px 16px', borderRadius: '16px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 'bold',
+              transition: 'all 0.2s'
+            }}
+          >
+            <LayoutGrid size={16} /> Sequencer
+          </button>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '150px' }}>
           <Volume2 size={20} color="#fff" />
           <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolume} />
@@ -108,8 +138,10 @@ function App() {
         </div>
       </div>
 
-      {/* Garden Area (Left Side) - Spawner */}
-      <div style={{
+      {viewMode === 'garden' ? (
+        <>
+          {/* Garden Area (Left Side) - Spawner */}
+          <div style={{
         position: 'absolute', top: 0, left: 0, width: '220px', height: '100%',
         borderRight: '1px solid var(--panel-border)',
         background: 'rgba(0,0,0,0.4)',
@@ -235,6 +267,10 @@ function App() {
           onRemove={handleRemove}
         />
       ))}
+        </>
+      ) : (
+        <Sequencer isOn={isOn} />
+      )}
 
     </div>
   );
