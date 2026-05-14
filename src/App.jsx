@@ -2,19 +2,23 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AudioEngine } from './audio';
 import Plant from './Plant';
 import Sequencer from './Sequencer';
-import { Power, Volume2, Plus, Trash2, LayoutGrid, Flower2 } from 'lucide-react';
+import { Power, Volume2, Plus, Trash2, LayoutGrid, Flower2, Circle, Waves } from 'lucide-react';
 
 function App() {
   const [isOn, setIsOn] = useState(false);
   const [viewMode, setViewMode] = useState('garden'); // 'garden' or 'sequencer'
   const [volume, setVolume] = useState(0.8);
+  const [reverb, setReverb] = useState(0.6);
   const [bpm, setBpm] = useState(75);
+  const [timeSignature, setTimeSignature] = useState(4);
+  const [isRecording, setIsRecording] = useState(false);
   const basketRef = useRef(null);
 
   const [items, setItems] = useState([]);
 
   useEffect(() => {
     AudioEngine.setMasterVolume(volume);
+    AudioEngine.setMasterReverb(reverb);
   }, []);
 
   const handlePower = async () => {
@@ -33,10 +37,40 @@ function App() {
     AudioEngine.setMasterVolume(val);
   };
 
+  const handleReverb = (e) => {
+    const val = parseFloat(e.target.value);
+    setReverb(val);
+    AudioEngine.setMasterReverb(val);
+  };
+
   const handleBpm = (e) => {
     const val = parseFloat(e.target.value);
     setBpm(val);
     if (isOn) AudioEngine.setBpm(val);
+  };
+
+  const handlePresetBpm = (newBpm) => {
+    setBpm(newBpm);
+    if (isOn) AudioEngine.setBpm(newBpm);
+  };
+
+  const handleTimeSignature = (e) => {
+    const val = parseInt(e.target.value, 10);
+    setTimeSignature(val);
+    if (isOn) AudioEngine.setTimeSignature([val, 4]);
+  };
+
+  const handleRecording = async () => {
+    if (!isRecording) {
+      if (!isOn) {
+        await handlePower();
+      }
+      await AudioEngine.startRecording();
+      setIsRecording(true);
+    } else {
+      await AudioEngine.stopRecording();
+      setIsRecording(false);
+    }
   };
 
   const spawnItem = (type) => {
@@ -99,6 +133,24 @@ function App() {
           <Power size={24} />
         </button>
 
+        <button 
+          onClick={handleRecording}
+          style={{
+            background: isRecording ? 'rgba(239, 68, 68, 0.2)' : 'transparent',
+            border: `1px solid ${isRecording ? '#ef4444' : 'var(--panel-border)'}`,
+            color: isRecording ? '#ef4444' : '#fff',
+            padding: '10px',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            boxShadow: isRecording ? '0 0 15px rgba(239, 68, 68, 0.4)' : 'none'
+          }}
+          title="Record Loop"
+        >
+          <Circle size={24} fill={isRecording ? "#ef4444" : "none"} />
+        </button>
+
         {/* View Mode Toggle */}
         <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '20px', padding: '4px' }}>
           <button
@@ -129,12 +181,29 @@ function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '150px' }}>
           <Volume2 size={20} color="#fff" />
-          <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolume} />
+          <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolume} title="Volume" />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '150px' }}>
+          <Waves size={20} color="#fff" />
+          <input type="range" min="0" max="1" step="0.01" value={reverb} onChange={handleReverb} title="Reverb Amount" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '150px' }}>
           <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#fff', width: '30px' }}>{bpm}</span>
-          <input type="range" min="40" max="140" step="1" value={bpm} onChange={handleBpm} />
+          <input type="range" min="40" max="140" step="1" value={bpm} onChange={handleBpm} title="BPM" />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <select 
+            value={timeSignature} 
+            onChange={handleTimeSignature}
+            style={{ background: 'rgba(0,0,0,0.3)', color: '#fff', border: '1px solid var(--panel-border)', borderRadius: '4px', padding: '4px', fontSize: '12px' }}
+          >
+            <option value={3}>3/4</option>
+            <option value={4}>4/4</option>
+            <option value={5}>5/4</option>
+          </select>
         </div>
       </div>
 
@@ -269,7 +338,7 @@ function App() {
       ))}
         </>
       ) : (
-        <Sequencer isOn={isOn} />
+        <Sequencer isOn={isOn} timeSignature={timeSignature} onBpmChange={handlePresetBpm} />
       )}
 
     </div>

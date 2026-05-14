@@ -4,6 +4,9 @@ import * as Tone from 'tone';
 const masterReverb = new Tone.Reverb({ decay: 8, wet: 0.6 }).toDestination();
 const masterCompressor = new Tone.Compressor({ threshold: -24, ratio: 4, attack: 0.01, release: 0.1 }).connect(masterReverb);
 
+const recorder = new Tone.Recorder();
+masterReverb.connect(recorder);
+
 // Global Coherent Ambient Scale (C Lydian for a bright, floating, ethereal feel)
 const LYDIAN_SCALE = ['C3', 'D3', 'E3', 'F#3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F#4', 'G4', 'A4', 'B4', 'C5', 'E5', 'G5'];
 
@@ -147,7 +150,7 @@ export class OrganicAudio {
     } else if (this.type === 'fern') {
       // Cymbals / Hats
       this.synth = new Tone.MetalSynth({
-        frequency: 200, envelope: { attack: 0.001, decay: 0.5, release: 0.01 },
+        frequency: 200, envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
         harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5
       });
       this.filter = new Tone.Filter(2000, 'highpass');
@@ -213,7 +216,7 @@ export class OrganicAudio {
       if (this.synth) this.synth.envelope.decay = 0.1 + p2 * 0.8;
     } else if (this.type === 'fern') {
       if (this.filter) this.filter.frequency.rampTo(1000 + p1 * 5000, 0.1);
-      if (this.synth) this.synth.envelope.decay = 0.1 + p2 * 1.5;
+      if (this.synth) this.synth.envelope.decay = 0.05 + p2 * 0.4;
     } else if (this.type === 'bush') {
       if (this.synth) this.synth.envelope.decay = 0.05 + p1 * 0.4;
       if (this.synth2) this.synth2.envelope.decay = 0.05 + p2 * 0.2;
@@ -246,8 +249,8 @@ export class OrganicAudio {
       // Kick drum
       this.synth.triggerAttackRelease('C1', '8n', time, value.velocity);
     } else if (this.type === 'fern') {
-      // Cymbal
-      this.synth.triggerAttackRelease('16n', time, value.velocity);
+      // Cymbal / Hats
+      this.synth.triggerAttackRelease('200', '16n', time, value.velocity * 0.15);
     } else if (this.type === 'bush') {
       // Snare
       this.synth.triggerAttackRelease('16n', time, value.velocity * 0.8);
@@ -315,13 +318,32 @@ export const AudioEngine = {
     const db = val === 0 ? -Infinity : 20 * Math.log10(val);
     Tone.getDestination().volume.rampTo(db, 0.1);
   },
+  setMasterReverb(val) {
+    masterReverb.wet.rampTo(val, 0.1);
+  },
   setBpm(val) {
     Tone.Transport.bpm.rampTo(val, 0.5);
+  },
+  setTimeSignature(ts) {
+    Tone.Transport.timeSignature = ts;
   },
   getLoopProgress() {
     if (!this.isStarted) return 0;
     const ticks = Tone.Transport.ticks;
     const ticksPerLoop = Tone.Time('2m').toTicks();
     return (ticks % ticksPerLoop) / ticksPerLoop;
+  },
+  async startRecording() {
+    await Tone.start();
+    recorder.start();
+  },
+  async stopRecording() {
+    const recording = await recorder.stop();
+    const url = URL.createObjectURL(recording);
+    const anchor = document.createElement("a");
+    anchor.download = "music-flowers-loop.webm";
+    anchor.href = url;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 };
