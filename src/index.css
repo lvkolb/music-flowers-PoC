@@ -1,0 +1,74 @@
+:root {
+  --bg-color: #050a0f;
+  --panel-bg: rgba(20, 30, 40, 0.4);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  
+  --accent-pad: #38bdf8; /* Round flower */
+  --accent-melody: #f472b6; /* Pointed flower */
+  --accent-rhythm: #a78bfa; /* Clustered flower */
+  
+  --basket-color: rgba(16, 185, 129, 0.1);
+  --basket-border: rgba(16, 185, 129, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  background-image: radial-gradient(circle at 50% 0%, #112233 0%, var(--bg-color) 70%);
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Custom Range Input Styling */
+input[type=range] {
+  -webkit-appearance: none; 
+  width: 100%;
+  background: transparent;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  margin-top: -6px;
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
